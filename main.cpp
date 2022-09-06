@@ -70,13 +70,24 @@ private:
     
     
 public:
+    //root of the tree
     struct node* root;
 
+    /**
+     * @brief Insert function for arcs into an AVL tree structure
+     * 
+     * @param n current node
+     * @param p point to add
+     * @param x current position of beachline
+     * @return ** node* pointer to current node with updated children
+     */
     node* insert(node* n,point &p, float x){
+        //if current node is NULL (only when tree is empty) set current node to point to add
         if(n==NULL)
         {
             return new node(p);
         }
+        //if node is intersection of two arcs add new node to subtree
         if(n->tuple)
         {
             //i think we have to have an extra input here, that means the current position of the beach line
@@ -87,18 +98,23 @@ public:
                 n->right=insert(n->right,p);
                 n->heightR=std::max(n->right->heightR,n->right->heightL)+1;
             }*/
+
+            /*
+            supposed to check relative position of current tuple and new point to decide location in the tree
+            does not work as intended at the moment
+            */
             if(p.x>(*n).getMidPointX()){
                 n->right=insert(n->right,p, x);
                 n->heightR=std::max(n->right->heightR,n->right->heightL)+1;
             }
-            /*else if((p.x-n->dataL->x)==(n->dataR->x-p.x)){
-
-            }*/
             else
             {
                 n->left=insert(n->left,p, x);
                 n->heightL=std::max(n->left->heightR,n->left->heightL)+1;
             }
+            /*
+            rebalances the subtree to keep balance (ensures O(log n) insert)
+            */
             if(n->heightL-n->heightR>=2)
             {
                 n=rightRotation(n);
@@ -108,8 +124,23 @@ public:
             }
             return n;
         }
+        /*
+        case where current (A) node is a leaf, point to insert (B) is smaller than A 
+        Reverse ballance if B is larger 
+              A
+              |
+              V
+             B,A
+            /   \
+          A,B    A
+         /   \
+        A     B
+        */
         else
         {
+            /*
+            if point to add is larger
+            */
             if(p.x>n->dataL->x)
             {
                 node* temp=new node(p,*(n->dataL));
@@ -123,6 +154,9 @@ public:
                 n->heightL=1;
                 n->heightR=2;
             }
+            /*
+            if point to add is smaller
+            */
             else
             {
                 node* temp=new node(*(n->dataL),p);
@@ -140,48 +174,10 @@ public:
         }
     }
 
-    node* find(node* current, node* target){
-        if(current==nullptr){
-            return NULL;
-        }
-        if((*target).getMidPointX()==(*current).getMidPointX()){
-            /*if(target->dataL==current->dataL && target->dataR==current->dataR){
-                return current;
-            }
-            else{
-                if(target->dataL->)
-
-            }*/
-            return current;
-        }
-        else if((*target).getMidPointX()>(*current).getMidPointX()){
-            return find(current->right,target);
-        }
-        else{
-            return find(current->left,target);
-        }
-        return NULL;
-    }
-    node* getleftmostchildParent(node* a, node* target){
-        if(a->left->tuple==false){
-            return a;
-        } 
-        else{
-            return getleftmostchildParent(a->left, target);
-        }
-    }
-
-    node* getrightmostchildParent(node* a, node* target){
-        if(a->right->tuple==false){
-            return a;
-        } 
-        else{
-            return getrightmostchildParent(a->left, target);
-        }
-    }
 
 
     /*
+    rotates subtree according to the folloing schema
             A           B
            / \         / \
           B   C  -->  D   A
@@ -199,6 +195,7 @@ public:
         return b;
     }
     /*
+    rotates subtree according to the folloing schema
             A           B
            / \         / \
           B   C  <--  D   A
@@ -228,6 +225,5 @@ int main()
     Beachline.root=Beachline.insert(Beachline.root,b,1.5);
     Beachline.root=Beachline.insert(Beachline.root,c,2);
     Beachline.root=Beachline.insert(Beachline.root,d,3);
-    node* found=Beachline.find(Beachline.root,new node(c,a));
     std::cout << "Hello World" << 4 << std::endl;
 }
