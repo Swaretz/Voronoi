@@ -25,6 +25,9 @@ struct node
         dataL=p;
         dataR=p;
     }
+    point getRelativePos(float directrix){
+        
+    }
     float getMidPointX(){
         if(tuple==true){
 
