@@ -57,13 +57,14 @@ struct node
         return returnvalue;
     }
     float getMidPoint(){
-        float distance=abs(dataL->x-dataR->x);
+        /*float distance=abs(dataL->x-dataR->x);
         if(dataL->y>dataR->y){
             return std::min(dataL->x,dataR->x)+0.75*distance;
         }
         else{
             return std::min(dataL->x,dataR->x)+0.25*distance;
-        }
+        }*/
+        return std::min(dataL->x,dataR->x)+abs(dataL->x-dataR->x)*0.5;
     }
     node(point &p1,point &p2)
     {
@@ -115,20 +116,11 @@ public:
         //if node is intersection of two arcs add new node to subtree
         if(n->tuple)
         {
-            //i think we have to have an extra input here, that means the current position of the beach line
-            //this will be used to assert the relative position of each tuple in comparison to the new site that is to be added
-            
-            /*if(p.x>n->dataR->x||(p.x-n->dataL->x)>(n->dataR->x-p.x))
-            {
-                n->right=insert(n->right,p);
-                n->heightR=std::max(n->right->heightR,n->right->heightL)+1;
-            }*/
-
             /*
             supposed to check relative position of current tuple and new point to decide location in the tree
             does not work as intended at the moment
             */
-            if(p.x>(*n).getMidPoint()){
+            if(p.x>(*n).getRelativePos(x).x){
                 n->right=insert(n->right,p, x);
                 n->heightR=std::max(n->right->heightR,n->right->heightL)+1;
             }
@@ -142,16 +134,16 @@ public:
             */
             if(n->heightL-n->heightR>=2)
             {
-                /*if(n->left->heightR==n->heightL-1){
+                if(n->left->heightR==n->heightL-1){
                     n->left=leftRotation(n->left);
-                }*/
+                }
                 n=rightRotation(n);
             }
             else if(n->heightL-n->heightR<=-2)
             {
-                /*if(n->right->heightL==n->heightR-1){
+                if(n->right->heightL==n->heightR-1){
                     n->right=rightRotation(n->right);
-                }*/
+                }
                 n=leftRotation(n);
             }
             return n;
