@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm> 
+#include <cmath>
 
 
 struct point
@@ -26,21 +27,42 @@ struct node
         dataR=p;
     }
     point getRelativePos(float directrix){
-        
-    }
-    float getMidPointX(){
-        if(tuple==true){
-
-            return dataL->x+0.5*(dataR->x-dataL->x);
-            /*if(dataL->x<dataR->x){
-                return dataL->x+0.5*std::abs(dataR->x-dataL->x);
+        //determine highest y value of the tuple
+        if(tuple==false)return *dataL;
+        point* highest;
+        if(dataL->y>dataR->y)highest=dataL;
+        else highest=dataR;
+        point returnvalue;
+        float a1=dataR->y-directrix;
+        float a2=dataL->y-directrix;
+        float b1=-(2*dataL->x)*a1;
+        float b2=-(2*dataR->x)*a2;
+        float c1=a1*((dataL->x)*(dataL->x)+((dataL->y)*(dataL->y))-(directrix*directrix));
+        float c2=a2*((dataR->x)*(dataR->x)+((dataR->y)*(dataR->y))-(directrix*directrix));
+        float a=a1-a2;
+        float b=b1-b2;
+        float c=c1-c2;
+        float discriminant = b*b - 4*a*c;
+        if(discriminant>0){
+            if(dataL==highest){
+                returnvalue.x=(-b+sqrt(discriminant))/(2*a);
             }
             else{
-                return dataR->x+0.5*std::abs(dataL->x-dataR->x);
-            }*/
+                returnvalue.x=(-b-sqrt(discriminant))/(2*a);
+            }
+        }
+        else if(discriminant==0){
+            returnvalue.x=(-b)/(2*a);
+        }
+        return returnvalue;
+    }
+    float getMidPoint(){
+        float distance=abs(dataL->x-dataR->x);
+        if(dataL->y>dataR->y){
+            return std::min(dataL->x,dataR->x)+0.75*distance;
         }
         else{
-            return dataL->x;
+            return std::min(dataL->x,dataR->x)+0.25*distance;
         }
     }
     node(point &p1,point &p2)
@@ -106,7 +128,7 @@ public:
             supposed to check relative position of current tuple and new point to decide location in the tree
             does not work as intended at the moment
             */
-            if(p.x>(*n).getMidPointX()){
+            if(p.x>(*n).getMidPoint()){
                 n->right=insert(n->right,p, x);
                 n->heightR=std::max(n->right->heightR,n->right->heightL)+1;
             }
@@ -120,9 +142,16 @@ public:
             */
             if(n->heightL-n->heightR>=2)
             {
+                /*if(n->left->heightR==n->heightL-1){
+                    n->left=leftRotation(n->left);
+                }*/
                 n=rightRotation(n);
             }
-            else if(n->heightL-n->heightR<=-2){
+            else if(n->heightL-n->heightR<=-2)
+            {
+                /*if(n->right->heightL==n->heightR-1){
+                    n->right=rightRotation(n->right);
+                }*/
                 n=leftRotation(n);
             }
             return n;
@@ -228,5 +257,6 @@ int main()
     Beachline.root=Beachline.insert(Beachline.root,b,1.5);
     Beachline.root=Beachline.insert(Beachline.root,c,2);
     Beachline.root=Beachline.insert(Beachline.root,d,3);
+    point test=(Beachline.root->right->right)->getRelativePos(8);
     std::cout << "Hello World" << 4 << std::endl;
 }
