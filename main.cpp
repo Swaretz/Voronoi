@@ -29,9 +29,9 @@ struct node
     point getRelativePos(float directrix){
         //determine highest y value of the tuple
         if(tuple==false)return *dataL;
-        point* highest;
+        /*point* highest;
         if(dataL->y>dataR->y)highest=dataL;
-        else highest=dataR;
+        else highest=dataR;*/
         point returnvalue;
         float a1=dataR->y-directrix;
         float a2=dataL->y-directrix;
@@ -44,18 +44,20 @@ struct node
         float c=c1-c2;
         float discriminant = b*b - 4*a*c;
         if(discriminant>0){
-            if(dataL==highest){
+            /*if(dataL==highest){
                 returnvalue.x=(-b+sqrt(discriminant))/(2*a);
             }
             else{
                 returnvalue.x=(-b-sqrt(discriminant))/(2*a);
-            }
+            }*/
+            returnvalue.x=(-b-sqrt(discriminant))/(2*a);
         }
         else if(discriminant==0){
             returnvalue.x=(-b)/(2*a);
         }
         return returnvalue;
     }
+
     float getMidPoint(){
         /*float distance=abs(dataL->x-dataR->x);
         if(dataL->y>dataR->y){
@@ -66,12 +68,14 @@ struct node
         }*/
         return std::min(dataL->x,dataR->x)+abs(dataL->x-dataR->x)*0.5;
     }
+
     node(point &p1,point &p2)
     {
         tuple=true;
         dataL=&p1;
         dataR=&p2;
     }
+
     node(point* p1,point* p2)
     {
         tuple=true;
@@ -120,7 +124,8 @@ public:
             supposed to check relative position of current tuple and new point to decide location in the tree
             does not work as intended at the moment
             */
-            if(p.x>(*n).getRelativePos(x).x){
+           float testvalue = (*n).getRelativePos(x).x;
+            if(p.x>testvalue){
                 n->right=insert(n->right,p, x);
                 n->heightR=std::max(n->right->heightR,n->right->heightL)+1;
             }
@@ -134,16 +139,16 @@ public:
             */
             if(n->heightL-n->heightR>=2)
             {
-                if(n->left->heightR==n->heightL-1){
+                /*if(n->left->heightR==n->heightL-1){
                     n->left=leftRotation(n->left);
-                }
+                }*/
                 n=rightRotation(n);
             }
             else if(n->heightL-n->heightR<=-2)
             {
-                if(n->right->heightL==n->heightR-1){
+                /*if(n->right->heightL==n->heightR-1){
                     n->right=rightRotation(n->right);
-                }
+                }*/
                 n=leftRotation(n);
             }
             return n;
@@ -198,7 +203,16 @@ public:
         }
     }
 
-
+    point circleEvent(point* a, point* b, point* c){
+        float value,rest;
+        point returnvalue;
+        //equation 1:
+        value=(2*a->x-2*c->x)+(2*a->y-2*c->y)*(2*a->x-2*b->x)*(1/(2*b->y-2*a->y));
+        rest=(2*a->y-2*c->y)/(2*b->y-2*a->y)*(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y)+(c->x*c->x-a->x*a->x+c->y*c->y-a->y*a->y);
+        returnvalue.x=rest/(-value);
+        returnvalue.y=((2*a->x-2*b->x)*returnvalue.x+(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y))*(1/(2*b->y-2*a->y));
+        return returnvalue;
+    }
 
     /*
     rotates subtree according to the folloing schema
@@ -248,7 +262,16 @@ int main()
     Beachline.root=Beachline.insert(Beachline.root,a,1);
     Beachline.root=Beachline.insert(Beachline.root,b,1.5);
     Beachline.root=Beachline.insert(Beachline.root,c,2);
+    /*point bc=Beachline.root->getRelativePos(2);
+    point ab=Beachline.root->left->getRelativePos(2);
+    point cb=Beachline.root->right->getRelativePos(2);
+    point ba=Beachline.root->right->right->getRelativePos(2);*/
     Beachline.root=Beachline.insert(Beachline.root,d,3);
-    point test=(Beachline.root->right->right)->getRelativePos(8);
+    point ab=Beachline.root->getRelativePos(3);
+    point cb=Beachline.root->right->getRelativePos(3);
+    point ba=Beachline.root->right->right->getRelativePos(3);
+    point bc=Beachline.root->right->left->getRelativePos(3);
+    point da=Beachline.root->left->getRelativePos(3);
+    point ad=Beachline.root->left->left->getRelativePos(3);
     std::cout << "Hello World" << 4 << std::endl;
 }
