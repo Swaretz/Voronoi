@@ -202,15 +202,23 @@ public:
             return n;
         }
     }
-
+    /**
+     * @brief given three input points, gives the centre of the circle which all three inputs lie 
+     * 
+     * @param a first point
+     * @param b second point   
+     * @param c third point
+     * @return ** point centre of the circle
+     */
     point circleEvent(point* a, point* b, point* c){
-        float value,rest;
+        float value,rest, divval;
         point returnvalue;
         //equation 1:
-        value=(2*a->x-2*c->x)+(2*a->y-2*c->y)*(2*a->x-2*b->x)*(1/(2*b->y-2*a->y));
+        divval=(1/(2*b->y-2*a->y));
+        value=(2*a->x-2*c->x)+(2*a->y-2*c->y)*(2*a->x-2*b->x)*divval;
         rest=(2*a->y-2*c->y)/(2*b->y-2*a->y)*(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y)+(c->x*c->x-a->x*a->x+c->y*c->y-a->y*a->y);
         returnvalue.x=rest/(-value);
-        returnvalue.y=((2*a->x-2*b->x)*returnvalue.x+(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y))*(1/(2*b->y-2*a->y));
+        returnvalue.y=((2*a->x-2*b->x)*returnvalue.x+(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y))*divval;
         return returnvalue;
     }
 
