@@ -91,7 +91,20 @@ struct node
     }
 };
 
+struct prioNode
+{
+    bool circleEvent;
+    prioNode* next;
+    point* data;
+};
 
+class prioqueue
+{
+private:
+
+public:
+
+}
 
 
 class beachline
@@ -127,6 +140,8 @@ public:
            float testvalue = (*n).getRelativePos(x).x;
             if(p.x>testvalue){
                 n->right=insert(n->right,p, x);
+                //here we should store the three point that neighbor the inserted sub tree
+                //do this by checking height and then calculate circle event
                 n->heightR=std::max(n->right->heightR,n->right->heightL)+1;
             }
             else
