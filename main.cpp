@@ -90,21 +90,11 @@ struct node
         dataR=&p2;
     }
 };
-
-struct prioNode
+struct circle
 {
-    bool circleEvent;
-    prioNode* next;
-    point* data;
+    float radius,x,y;
 };
 
-class prioqueue
-{
-private:
-
-public:
-
-}
 
 
 class beachline
@@ -225,15 +215,16 @@ public:
      * @param c third point
      * @return ** point centre of the circle
      */
-    point circleEvent(point* a, point* b, point* c){
-        float value,rest, divval;
-        point returnvalue;
+    circle circleEvent(point* a, point* b, point* c){
+        float value,rest, divval, radius;
+        circle returnvalue;
         //equation 1:
         divval=(1/(2*b->y-2*a->y));
         value=(2*a->x-2*c->x)+(2*a->y-2*c->y)*(2*a->x-2*b->x)*divval;
         rest=(2*a->y-2*c->y)/(2*b->y-2*a->y)*(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y)+(c->x*c->x-a->x*a->x+c->y*c->y-a->y*a->y);
         returnvalue.x=rest/(-value);
         returnvalue.y=((2*a->x-2*b->x)*returnvalue.x+(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y))*divval;
+        returnvalue.radius=std::sqrt((1-returnvalue.x)*(1-returnvalue.x)+(1-returnvalue.y)*(1-returnvalue.y));
         return returnvalue;
     }
 
@@ -275,12 +266,107 @@ public:
     }
     
 };
+
+struct PrioNode
+{
+    bool circleEvent;
+    PrioNode* next;
+    float ycoord;
+    point* site;
+    circle* event;
+    PrioNode(point &s){
+        circleEvent=false;
+        next=NULL;
+        ycoord=s.y;
+        site=&s;
+        event=NULL;
+    }
+    PrioNode(point &s, PrioNode* p){
+        circleEvent=false;
+        next=p;
+        ycoord=s.y;
+        site=&s;
+        event=NULL;
+    }
+    PrioNode(circle &c){
+        circleEvent=true;
+        next=NULL;
+        ycoord=c.y+c.radius;
+        site=NULL;
+        event=&c;
+    }
+    PrioNode(circle &c, PrioNode* p){
+        circleEvent=true;
+        next=p;
+        ycoord=c.y+c.radius;
+        site=NULL;
+        event=&c;
+    }
+};
+
+
+class PrioQueue
+{
+private:
+struct PrioNode* root;
+PrioNode* insert(point &p,PrioNode* current){
+    if(current==NULL){
+        return new PrioNode(p);
+    }
+    else if(p.y>current->ycoord){
+       current->next=insert(p,current->next);
+       return current;
+    }
+    else{
+        return new PrioNode(p,current);
+    }
+}
+PrioNode* insert(circle &p,PrioNode* current){
+    if(current==NULL){
+        return new PrioNode(p);
+    }
+    else if(p.y+p.radius>current->ycoord){
+       current->next=insert(p,current->next);
+       return current;
+    }
+    else{
+        return new PrioNode(p,current);
+    }
+}
+public:
+void insert(point &site){
+    root=insert(site,root);
+}
+void insert(circle &event){
+    root=insert(event,root);
+}
+bool topCircle(){
+    return root->circleEvent;
+}
+void* pop(){
+    void* returnvalue;
+    if(root->circleEvent){
+        returnvalue=root->event;
+    }
+    else{
+        returnvalue=root->site;
+    }
+    PrioNode* temp=root;
+    root=root->next;
+    free(temp);
+    return returnvalue;
+}
+};
 int main()
 {
     point a={1,1};
     point b={2,1.5};
     point c={1.5,2};
     point d={1,3};
+    PrioQueue queue= PrioQueue();
+    queue.insert(a);
+    queue.insert(b);
+    point* test=(point*)queue.pop();
     beachline Beachline=beachline();
     Beachline.root=Beachline.insert(Beachline.root,a,1);
     Beachline.root=Beachline.insert(Beachline.root,b,1.5);
