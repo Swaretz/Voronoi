@@ -132,6 +132,7 @@ public:
                 n->right=insert(n->right,p, x);
                 //here we should store the three point that neighbor the inserted sub tree
                 //do this by checking height and then calculate circle event
+                //if(n->heightR==1) dosomething with n->dataL;//this is to get the left neighbor
                 n->heightR=std::max(n->right->heightR,n->right->heightL)+1;
             }
             else
