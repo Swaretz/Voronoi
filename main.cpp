@@ -93,6 +93,9 @@ struct node
 struct circle
 {
     float radius,x,y;
+    point* a;
+    point* b;
+    point* c;
 };
 
 
@@ -100,12 +103,22 @@ struct circle
 class beachline
 {
 private:
-    
+    struct Storage
+    {
+        struct point* a;//first arc to be split
+        struct point* b;//left arc
+        struct point* c;//right arc
+    };
     
 public:
     //root of the tree
     struct node* root;
-
+    struct Storage storage;
+    void resetStorage(){
+        storage.a=NULL;
+        storage.b=NULL;
+        storage.c=NULL;
+    }
     /**
      * @brief Insert function for arcs into an AVL tree structure
      * 
@@ -129,7 +142,17 @@ public:
             */
            float testvalue = (*n).getRelativePos(x).x;
             if(p.x>testvalue){
+                if(n->heightR==1)
+                {
+                    storage.a=n->dataR;
+                    storage.b=n->dataL;
+                }
+                
                 n->right=insert(n->right,p, x);
+                if(storage.a!=NULL && (storage.c==NULL || storage.b==NULL))
+                {
+                    storage.b=n->dataL;
+                }
                 //here we should store the three point that neighbor the inserted sub tree
                 //do this by checking height and then calculate circle event
                 //if(n->heightR==1) dosomething with n->dataL;//this is to get the left neighbor
@@ -137,6 +160,11 @@ public:
             }
             else
             {
+                if(n->heightL==1)
+                {
+                    storage.a=n->dataL;
+                    storage.c=n->dataR;
+                }
                 n->left=insert(n->left,p, x);
                 n->heightL=std::max(n->left->heightR,n->left->heightL)+1;
             }
@@ -216,16 +244,19 @@ public:
      * @param c third point
      * @return ** point centre of the circle
      */
-    circle circleEvent(point* a, point* b, point* c){
+    circle circleEvent(point &a, point &b, point &c){
         float value,rest, divval, radius;
         circle returnvalue;
         //equation 1:
-        divval=(1/(2*b->y-2*a->y));
-        value=(2*a->x-2*c->x)+(2*a->y-2*c->y)*(2*a->x-2*b->x)*divval;
-        rest=(2*a->y-2*c->y)/(2*b->y-2*a->y)*(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y)+(c->x*c->x-a->x*a->x+c->y*c->y-a->y*a->y);
+        divval=(1/(2*b.y-2*a.y));
+        value=(2*a.x-2*c.x)+(2*a.y-2*c.y)*(2*a.x-2*b.x)*divval;
+        rest=(2*a.y-2*c.y)/(2*b.y-2*a.y)*(b.x*b.x-a.x*a.x+b.y*b.y-a.y*a.y)+(c.x*c.x-a.x*a.x+c.y*c.y-a.y*a.y);
         returnvalue.x=rest/(-value);
-        returnvalue.y=((2*a->x-2*b->x)*returnvalue.x+(b->x*b->x-a->x*a->x+b->y*b->y-a->y*a->y))*divval;
+        returnvalue.y=((2*a.x-2*b.x)*returnvalue.x+(b.x*b.x-a.x*a.x+b.y*b.y-a.y*a.y))*divval;
         returnvalue.radius=std::sqrt((1-returnvalue.x)*(1-returnvalue.x)+(1-returnvalue.y)*(1-returnvalue.y));
+        returnvalue.a=&a;
+        returnvalue.b=&b;
+        returnvalue.c=&c;
         return returnvalue;
     }
 
@@ -275,35 +306,30 @@ struct PrioNode
     bool circleEvent;
     PrioNode* next;
     float ycoord;
-    point* site;
-    circle* event;
+    void* data;
     PrioNode(point &s){
         circleEvent=false;
         next=NULL;
         ycoord=s.y;
-        site=&s;
-        event=NULL;
+        data=&s;
     }
     PrioNode(point &s, PrioNode* p){
         circleEvent=false;
         next=p;
         ycoord=s.y;
-        site=&s;
-        event=NULL;
+        data=&s;
     }
     PrioNode(circle &c){
         circleEvent=true;
         next=NULL;
         ycoord=c.y+c.radius;
-        site=NULL;
-        event=&c;
+        data=&c;
     }
     PrioNode(circle &c, PrioNode* p){
         circleEvent=true;
         next=p;
         ycoord=c.y+c.radius;
-        site=NULL;
-        event=&c;
+        data=&c;
     }
 };
 
@@ -347,13 +373,7 @@ bool topCircle(){
     return root->circleEvent;
 }
 void* pop(){
-    void* returnvalue;
-    if(root->circleEvent){
-        returnvalue=root->event;
-    }
-    else{
-        returnvalue=root->site;
-    }
+    void* returnvalue=root->data;
     PrioNode* temp=root;
     root=root->next;
     free(temp);
@@ -370,7 +390,10 @@ int main()
     queue.insert(a);
     queue.insert(b);
     point* test=(point*)queue.pop();
+    point* test2=(point*)queue.pop();
     beachline Beachline=beachline();
+    circle circ=Beachline.circleEvent(a,b,c);
+    queue.insert(circ);
     Beachline.root=Beachline.insert(Beachline.root,a,1);
     Beachline.root=Beachline.insert(Beachline.root,b,1.5);
     Beachline.root=Beachline.insert(Beachline.root,c,2);
